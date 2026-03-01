@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: CI + Deploy Dev + Deploy Prod
 
 on:
   push:
@@ -27,14 +27,15 @@ jobs:
 
       - name: Build
         run: npm run build
+
       - name: Publish
         uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
 
-  release:
-    name: CD
+  deploy_dev:
+    name: Deploy Dev
     needs: build
     runs-on: ubuntu-latest
     environment: dev
@@ -51,5 +52,24 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_SECRET }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy dist/practice4/index.js --name ancient-recipe-9c7b --compatibility-date 2026-02-26 --compatibility-flags=nodejs_compat  --assets dist/client
- 
+          command: deploy dist/practice4/index.js --name ${{ secrets.CLOUDFLARE_WORKER_NAME }} --compatibility-date 2026-02-26 --compatibility-flags=nodejs_compat --assets dist/client
+
+  deploy_prod:
+    name: Deploy Prod (Approval Required)
+    needs: deploy_dev
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Deploy-Prod
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_SECRET }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy dist/practice4/index.js --name ${{ secrets.CLOUDFLARE_WORKER_NAME }} --compatibility-date 2026-02-26 --compatibility-flags=nodejs_compat --assets dist/client

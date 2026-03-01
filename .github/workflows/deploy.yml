@@ -57,7 +57,7 @@ jobs:
           test -f dist/practice4/index.js && echo "OK: dist/practice4/index.js exists" || (echo "MISSING: dist/practice4/index.js" && exit 1)
           test -d dist/client && echo "OK: dist/client exists" || (echo "MISSING: dist/client" && exit 1)
           test -f dist/client/index.html && echo "OK: dist/client/index.html exists" || (echo "MISSING: dist/client/index.html" && exit 1)
-
+        #w
       - name: Deploy-Dev (Workers)
         uses: cloudflare/wrangler-action@v3
         with:

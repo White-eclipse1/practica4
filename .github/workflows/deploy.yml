@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Workers (CI + CD)
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -22,13 +22,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Test (with coverage)
+      - name: Test
         run: npm run test -- --coverage
 
       - name: Build
         run: npm run build
-
-      - name: Publish dist artifact
+      - name: Publish
         uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -47,21 +46,10 @@ jobs:
           name: dist
           path: dist/
 
-      - name: Show dist tree
-        run: |
-          echo "=== dist tree ==="
-          ls -R dist
-
-      - name: Verify required files exist
-        run: |
-          test -f dist/practice4/index.js && echo "OK: dist/practice4/index.js exists" || (echo "MISSING: dist/practice4/index.js" && exit 1)
-          test -d dist/client && echo "OK: dist/client exists" || (echo "MISSING: dist/client" && exit 1)
-          test -f dist/client/index.html && echo "OK: dist/client/index.html exists" || (echo "MISSING: dist/client/index.html" && exit 1)
-        #w
-      - name: Deploy-Dev (Workers)
+      - name: Deploy-Dev
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_SECRET }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: '3.114.0'
-          command: deploy dist/practice4/index.js --name ancient-recipe-9c7b --compatibility-date 2026-03-01 --compatibility-flags=nodejs_compat --assets dist/client
+          command: deploy dist/practice4/index.js --name ancient-recipe-9c7b --compatibility-date 2026-02-26 --compatibility-flags=nodejs_compat  --assets dist/client
+ 

@@ -1,26 +1,61 @@
-release:
-  name: CD
-  needs: build
-  runs-on: ubuntu-latest
-  environment: dev
+name: Deploy to GitHub Pages
 
-  steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: dist
-        path: dist/
+on:
+  push:
+    branches: [ main ]
 
-    # DEBUG: ver qué existe realmente dentro de dist/
-    - name: Show dist tree
-      run: |
-        echo "=== dist tree ==="
-        ls -R dist
+jobs:
+  build:
+    name: CI
+    runs-on: ubuntu-latest
 
-    - name: Deploy-Dev
-      uses: cloudflare/wrangler-action@v3
-      with:
-        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        # IMPORTANTE: pon wrangler explícito para evitar interpretaciones raras
-        command: wrangler deploy dist/practice4/index.js --name ancient-recipe-9c7b --compatibility-date 2026-03-01 --compatibility-flags=nodejs_compat --assets dist/client
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test
+        run: npm run test -- --coverage
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  release:
+    name: CD
+    needs: build
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      # FIX 1: debug para ver qué existe realmente en dist/
+      - name: Show dist tree
+        run: |
+          echo "=== dist tree ==="
+          ls -R dist
+
+      - name: Deploy-Dev
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: wrangler deploy dist/practice4/index.js --name ancient-recipe-9c7b --compatibility-date 2026-03-01 --compatibility-flags=nodejs_compat --assets dist/client

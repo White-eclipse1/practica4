@@ -47,16 +47,10 @@ jobs:
           name: dist
           path: dist/
 
-      # --- DEBUG para ver exactamente qué llegó ---
       - name: Show dist tree
         run: |
           echo "=== dist tree ==="
           ls -R dist
-
-      - name: Show file sizes (top)
-        run: |
-          echo "=== dist sizes ==="
-          du -ah dist | sort -hr | head -n 50
 
       - name: Verify required files exist
         run: |
@@ -64,17 +58,10 @@ jobs:
           test -d dist/client && echo "OK: dist/client exists" || (echo "MISSING: dist/client" && exit 1)
           test -f dist/client/index.html && echo "OK: dist/client/index.html exists" || (echo "MISSING: dist/client/index.html" && exit 1)
 
-      # --- Deploy con logs detallados ---
-      - name: Deploy-Dev (Workers) with debug logs
+      - name: Deploy-Dev (Workers)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '3.114.0'
-          command: >
-            wrangler deploy dist/practice4/index.js
-            --name ancient-recipe-9c7b
-            --compatibility-date 2026-03-01
-            --compatibility-flags=nodejs_compat
-            --assets dist/client
-            --log-level debug
+          command: deploy dist/practice4/index.js --name ancient-recipe-9c7b --compatibility-date 2026-03-01 --compatibility-flags=nodejs_compat --assets dist/client --log-level debug

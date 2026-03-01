@@ -61,7 +61,7 @@ jobs:
       - name: Deploy-Dev (Workers)
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_SECRET }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: '3.114.0'
-          command: deploy dist/practice4/index.js --name ancient-recipe-9c7b --compatibility-date 2026-03-01 --compatibility-flags=nodejs_compat --assets dist/client --log-level debug
+          command: deploy dist/practice4/index.js --name ancient-recipe-9c7b --compatibility-date 2026-03-01 --compatibility-flags=nodejs_compat --assets dist/client
